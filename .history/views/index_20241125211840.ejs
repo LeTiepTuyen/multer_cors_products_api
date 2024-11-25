@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Management</title>
+  <link href="/public/tailwind.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen font-poppins">
+  <div class="container mx-auto py-8">
+    <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Product Management</h1>
+
+    <div class="text-center mb-6">
+      <button id="add-product-btn" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Add New Product</button>
+    </div>
+
+    <div class="overflow-x-auto shadow-md rounded-lg max-w-4xl mx-auto">
+      <table class="w-full bg-white rounded-lg shadow-md text-sm text-left text-gray-600">
+        <thead class="bg-gray-200 text-gray-700">
+          <tr>
+            <th class="py-3 px-4">Name</th>
+            <th class="py-3 px-4">Description</th>
+            <th class="py-3 px-4">Price</th>
+            <th class="py-3 px-4">Image</th>
+            <th class="py-3 px-4">Category</th>
+            <th class="py-3 px-4">Stock</th>
+            <th class="py-3 px-4 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% products.forEach(product => { %>
+            <tr class="border-b hover:bg-gray-100">
+              <td class="py-3 px-4"><%= product.name %></td>
+              <td class="py-3 px-4"><%= product.description %></td>
+              <td class="py-3 px-4">$<%= product.price.toFixed(2) %></td>
+              <td class="py-3 px-4"><img src="<%= product.image %>" alt="<%= product.name %>" class="w-12 h-12 rounded-lg"></td>
+              <td class="py-3 px-4"><%= product.category %></td>
+              <td class="py-3 px-4"><%= product.stock %></td>
+              <td class="py-3 px-4 text-center space-x-2">
+                <button 
+                  class="bg-blue-500 text-white px-4 py-1 rounded-md hover:bg-blue-600 edit-btn"
+                  data-id="<%= product._id %>"
+                  data-name="<%= product.name %>"
+                  data-description="<%= product.description %>"
+                  data-price="<%= product.price %>"
+                  data-image="<%= product.image %>"
+                  data-category="<%= product.category %>"
+                  data-stock="<%= product.stock %>">
+                  Edit
+                </button>
+                <button 
+                  class="bg-red-500 text-white px-4 py-1 rounded-md hover:bg-red-600 delete-btn"
+                  data-id="<%= product._id %>"
+                  data-name="<%= product.name %>">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div id="addProductModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
+      <div class="bg-white rounded-lg shadow-lg p-6 w-1/3">
+        <h2 class="text-xl font-bold mb-4">Add New Product</h2>
+        <form id="addProductForm" method="POST" action="/" enctype="multipart/form-data">
+          <div class="mb-4">
+            <label for="addName" class="block text-sm font-medium text-gray-600">Product Name</label>
+            <input id="addName" name="name" type="text" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div class="mb-4">
+            <label for="addDescription" class="block text-sm font-medium text-gray-600">Description</label>
+            <input id="addDescription" name="description" type="text" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div class="mb-4">
+            <label for="addPrice" class="block text-sm font-medium text-gray-600">Price</label>
+            <input id="addPrice" name="price" type="number" step="0.01" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div class="mb-4">
+            <label for="addImage" class="block text-sm font-medium text-gray-600">Image URL</label>
+            <input id="addImage" name="image" type="text" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div class="mb-4">
+            <label for="addCategory" class="block text-sm font-medium text-gray-600">Category</label>
+            <input id="addCategory" name="category" type="text" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div class="mb-4">
+            <label for="addStock" class="block text-sm font-medium text-gray-600">Stock</label>
+            <input id="addStock" name="stock" type="number" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div class="flex justify-end space-x-4">
+            <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600" onclick="closeAddProductModal()">Cancel</button>
+            <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Add</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div id="editProductModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
+      <div class="bg-white rounded-lg shadow-lg p-6 w-1/3">
+        <h2 class="text-xl font-bold mb-4">Edit Product</h2>
+        <form id="editProductForm" method="POST" enctype="multipart/form-data">
+          <div class="mb-4">
+            <label for="editName" class="block text-sm font-medium text-gray-600">Product Name</label>
+            <input id="editName" name="name" type="text" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div class="mb-4">
+            <label for="editDescription" class="block text-sm font-medium text-gray-600">Description</label>
+            <input id="editDescription" name="description" type="text" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div class="mb-4">
+            <label for="editPrice" class="block text-sm font-medium text-gray-600">Price</label>
+            <input id="editPrice" name="price" type="number" step="0.01" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div class="mb-4">
+            <label for="editImage" class="block text-sm font-medium text-gray-600">Image URL</label>
+            <input id="editImage" name="image" type="text" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div class="mb-4">
+            <label for="editCategory" class="block text-sm font-medium text-gray-600">Category</label>
+            <input id="editCategory" name="category" type="text" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div class="mb-4">
+            <label for="editStock" class="block text-sm font-medium text-gray-600">Stock</label>
+            <input id="editStock" name="stock" type="number" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm" required>
+          </div>
+          <div class="flex justify-end space-x-4">
+            <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600" onclick="closeEditProductModal()">Cancel</button>
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const addProductModal = document.getElementById('addProductModal');
+        const editProductModal = document.getElementById('editProductModal');
+        const editProductForm = document.getElementById('editProductForm');
+        const editName = document.getElementById('editName');
+        const editDescription = document.getElementById('editDescription');
+        const editPrice = document.getElementById('editPrice');
+        const editImage = document.getElementById('editImage');
+        const editCategory = document.getElementById('editCategory');
+        const editStock = document.getElementById('editStock');
+
+        document.getElementById('add-product-btn').addEventListener('click', () => {
+          addProductModal.classList.remove('hidden');
+        });
+
+        document.querySelectorAll('.edit-btn').forEach(button => {
+          button.addEventListener('click', () => {
+            const id = button.dataset.id;
+            const name = button.dataset.name;
+            const description = button.dataset.description;
+            const price = button.dataset.price;
+            const image = button.dataset.image;
+            const category = button.dataset.category;
+            const stock = button.dataset.stock;
+
+            // Populate modal fields
+            editName.value = name;
+            editDescription.value = description;
+            editPrice.value = parseFloat(price).toFixed(2);
+            editImage.value = image;
+            editCategory.value = category;
+            editStock.value = stock;
+
+            // Correctly set the form action
+            editProductForm.action = `/${id}`;
+
+            // Show the modal
+            editProductModal.classList.remove('hidden');
+          });
+        });
+
+        // Handle delete button click
+        document.querySelectorAll('.delete-btn').forEach(button => {
+          button.addEventListener('click', () => {
+            const id = button.dataset.id;
+            if (confirm(`Are you sure you want to delete ${button.dataset.name}?`)) {
+              fetch(`/${id}`, {
+                method: 'DELETE'
+              })
+              .then(response => {
+                if (response.ok) {
+                  window.location.reload();
+                } else {
+                  return response.text().then(text => { throw new Error(text) });
+                }
+              })
+              .catch(error => {
+                console.error('Error deleting product:', error);
+                alert('Error deleting product: ' + error.message);
+              });
+            }
+          });
+        });
+      });
+
+      function closeAddProductModal() {
+        document.getElementById('addProductModal').classList.add('hidden');
+      }
+
+      function closeEditProductModal() {
+        document.getElementById('editProductModal').classList.add('hidden');
+      }
+    </script>
+  </div>
+</body>
+</html>
