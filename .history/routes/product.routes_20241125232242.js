@@ -11,24 +11,24 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     cb(null, file.originalname);
-  }
+  },
 });
 
 const upload = multer({ storage: storage });
 
-// Route to display the product management page
-router.get('/', productController.getAllProducts);
+// Middleware để kiểm tra và debug dữ liệu
+const debugFormData = (req, res, next) => {
+  console.log('req.body:', req.body);
+  console.log('req.file:', req.file);
+  next();
+};
 
 // Route to create a new product
-router.post('/', upload.single('image'), productController.createProduct);
+router.post('/', upload.single('image'), debugFormData, productController.createProduct);
 
-// Route to update a product by ID
+// Các route khác giữ nguyên
+router.get('/', productController.getAllProducts);
 router.post('/:id', upload.single('image'), productController.updateProduct);
-
-// Route to delete a product by ID
 router.delete('/:id', productController.deleteProduct);
-
-// Route to return JSON for testing CORS
-router.get('/test-json', productController.getAllProductsJSON);
 
 module.exports = router;

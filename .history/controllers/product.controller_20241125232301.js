@@ -12,35 +12,39 @@ exports.getAllProducts = async (req, res) => {
   }
 };
 
-// Get all products and return as JSON
-exports.getAllProductsJSON = async (req, res) => {
-  try {
-    const products = await Product.find();
-    res.json(products);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
 // Create new product
 exports.createProduct = async (req, res) => {
   try {
+    console.log('req.body:', req.body); // Log các trường text
+    console.log('req.file:', req.file); // Log file upload
 
-    console.log(req.file);
+    // Kiểm tra nếu `req.body` không có dữ liệu
+    if (!req.body.name) {
+      return res.status(400).json({ error: 'Name is required' });
+    }
+
     const newProduct = new Product({
       ...req.body,
-      image: req.file ? `/uploads/${req.file.originalname}` : undefined
+      price: parseFloat(req.body.price), // Chuyển price về dạng số
+      stock: parseInt(req.body.stock, 10), // Chuyển stock về dạng số
+      image: req.file ? `/uploads/${req.file.originalname}` : undefined,
     });
+
     await newProduct.save();
-    res.redirect('/');
+    res.status(201).json(newProduct);
   } catch (error) {
+    console.error(error);
     res.status(400).json({ error: error.message });
   }
 };
 
+
 // Update product by ID
 exports.updateProduct = async (req, res) => {
   try {
+    console.log('req.body:', req.body); // Log các trường text
+    console.log('req.file:', req.file); // Log file upload
+
     const product = await Product.findById(req.params.id);
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
@@ -48,9 +52,12 @@ exports.updateProduct = async (req, res) => {
 
     const updatedData = {
       ...req.body,
-      image: req.file ? `/uploads/${req.file.originalname}` : product.image
+      price: parseFloat(req.body.price), // Chuyển price về dạng số
+      stock: parseInt(req.body.stock, 10), // Chuyển stock về dạng số
+      image: req.file ? `/uploads/${req.file.originalname}` : product.image,
     };
 
+    // Xóa file cũ nếu có file mới
     if (req.file && product.image) {
       const oldImagePath = path.join(__dirname, '..', product.image);
       fs.unlink(oldImagePath, (err) => {
@@ -61,6 +68,7 @@ exports.updateProduct = async (req, res) => {
     const updatedProduct = await Product.findByIdAndUpdate(req.params.id, updatedData, { new: true });
     res.redirect('/');
   } catch (error) {
+    console.error(error);
     res.status(400).json({ error: error.message });
   }
 };
@@ -73,6 +81,7 @@ exports.deleteProduct = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
+    // Xóa file ảnh liên quan
     if (product.image) {
       const imagePath = path.join(__dirname, '..', product.image);
       fs.unlink(imagePath, (err) => {
@@ -82,6 +91,7 @@ exports.deleteProduct = async (req, res) => {
 
     res.status(200).json({ message: 'Product deleted successfully' });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: error.message });
   }
 };

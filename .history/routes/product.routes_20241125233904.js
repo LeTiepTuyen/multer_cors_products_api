@@ -29,6 +29,8 @@ router.post('/:id', upload.single('image'), productController.updateProduct);
 router.delete('/:id', productController.deleteProduct);
 
 // Route to return JSON for testing CORS
-router.get('/test-json', productController.getAllProductsJSON);
+router.get('/test-json', (req, res) => {
+  res.json({ message: 'CORS is working!' });
+});
 
 module.exports = router;
